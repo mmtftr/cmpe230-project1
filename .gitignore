@@ -1,2 +1,6 @@
 matlang2c
-tests/main
+tests/test
+tests/test.dSYM
+
+*.o
+**/*.o

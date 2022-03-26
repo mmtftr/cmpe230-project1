@@ -1,0 +1,12 @@
+{
+  "files.associations": {
+    "math.h": "c",
+    "tokens.h": "c",
+    "algorithm": "c",
+    "functional": "c",
+    "__locale": "c",
+    "cctype": "c",
+    "locale": "c"
+  },
+  "C_Cpp.errorSquiggles": "Enabled"
+}

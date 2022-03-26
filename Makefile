@@ -1,9 +1,18 @@
-objects = main.o 
+c_files = parser.c scanner.c symbol-table.c tokens.c
 
-matlang2c: $(objects)
-	cc -o matlang2c $(objects)
+objects = $(c_files:.c=.o)
 
-test:
-	(cd tests && make test)
+headers = defs.h $(c_files:.c=.h)
+
+others = preamble.c
+
+matlang2c: $(objects) $(headers) $(others)
+	cc -o matlang2c matlang2c.c $(c_files)
+
+tests/test: $(objects) $(headers) $(others) tests/test.c tests/scanner-test.h
+	cc -ggdb -o tests/test tests/test.c $(c_files)
+
+test: tests/test
+	./tests/test
 
 .PHONY: test
