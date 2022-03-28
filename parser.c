@@ -105,7 +105,7 @@ ASTNode *parse_root(Parser *parser, ASTNode *root)
     ASTNode *node = parse_statement(parser);
     if (node != NULL)
     {
-      add_child(root, node);
+      add_child(root, *node);
     }
   }
 
@@ -214,7 +214,7 @@ ASTNode *parse_declaration(Parser *parser)
   return node;
 }
 
-void add_child(ASTNode *parent, ASTNode *child)
+void add_child(ASTNode *parent, ASTNode child)
 {
   parent->contents[parent->num_contents] = child;
   parent->num_contents++;

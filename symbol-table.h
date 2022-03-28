@@ -28,3 +28,4 @@ typedef struct SymbolTable SymbolTable;
 SymbolTable *new_symbol_table();
 Variable *lookup_variable(SymbolTable *table, char *name);
 void add_variable(SymbolTable *table, Variable var);
+VariableType get_var_type(TokenType type);

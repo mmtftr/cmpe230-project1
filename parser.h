@@ -1,4 +1,5 @@
 #pragma once
+#include "tokens.h"
 #include "symbol-table.h"
 
 typedef enum ASTNodeType
@@ -7,14 +8,15 @@ typedef enum ASTNodeType
   AST_STMT,
   AST_FOR_LOOP,
   AST_EXPR,
-  AST_TERM,
-  AST_FACTOR,
   AST_ASSIGNMENT_DEST
 } ASTNodeType;
 
 typedef enum StatementType
 {
+  // var_type -> VariableType, var_name -> Name
+  // Only allowed in the global scope
   STMT_DECL,
+  // lhs -> AST_ASSIGNMENT_DEST, rhs->AST_EXPR
   STMT_ASSIGNMENT,
   STMT_PRINT_STMT
 } StatementType;
@@ -72,7 +74,7 @@ typedef struct ASTNode
   // Literal
   double value;
 
-  // for loop or the root
+  // for loop, root node,
   ASTNode *contents;
   int num_contents;
 

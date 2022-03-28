@@ -14,7 +14,7 @@ SymbolTable *new_symbol_table()
 
 void add_variable(SymbolTable *table, Variable var)
 {
-  table->variables[table->num_variables] = *var;
+  table->variables[table->num_variables] = var;
   table->num_variables++;
 }
 Variable *lookup_variable(SymbolTable *table, char *name)
