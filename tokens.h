@@ -28,8 +28,14 @@ enum TokenType
   TKN_TYPE_MATRIX,
   TKN_KW_FOR,
   TKN_KW_IN,
+  // We declare these identifiers as built-in
+  // To avoid having to write special function parsing logic
   TKN_SPECIAL_PRINT,
   TKN_SPECIAL_PRINTSEP,
+  TKN_FUNCTION_TR,
+  TKN_FUNCTION_SQRT,
+  TKN_FUNCTION_CHOOSE,
+  // '=' sign
   TKN_ASSIGN,
   TKN_UNKNOWN
 };

@@ -30,4 +30,4 @@ Token *get_number_from_scanner(Scanner *scanner);
 Token *get_operator_from_scanner(Scanner *scanner);
 int is_operator(char a);
 int is_keyword(char *a);
-void exit_with_error(Scanner *scanner, char *error_msg);
+void scanner_exit_with_error(Scanner *scanner, char *error_msg);

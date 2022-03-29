@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "defs.h"
 #include "tokens.h"
+// FILE IS DEPRECATED!!!
 
 Token *get_tokens_from_file(char *filename)
 {

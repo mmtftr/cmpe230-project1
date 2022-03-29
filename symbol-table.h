@@ -6,18 +6,23 @@ enum VariableType
   TYPE_MATRIX,
 };
 
+typedef struct ResultType
+{
+  VariableType var_type;
+  // For scalars both = 1, for vectors width = 1 and height = length of vector
+  int height;
+  int width;
+} ResultType;
+
 typedef enum VariableType VariableType;
 
 struct Variable
 {
-  VariableType type;
+  ResultType type;
   char *name;
-  int height;
-  int width;
 };
 
 typedef struct Variable Variable;
-
 struct SymbolTable
 {
   Variable *variables;

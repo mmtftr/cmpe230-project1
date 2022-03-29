@@ -178,7 +178,7 @@ Token *get_token_from_scanner(Scanner *scanner)
       }
       else
       {
-        exit_with_error(scanner, "Unknown character");
+        scanner_exit_with_error(scanner, "Unknown character");
       }
     }
 
@@ -239,6 +239,18 @@ Token *get_identifier_or_keyword_from_scanner(Scanner *scanner)
     {
       type = TKN_SPECIAL_PRINTSEP;
     }
+    if (strcmp(ident, "tr") == 0)
+    {
+      type = TKN_FUNCTION_TR;
+    }
+    if (strcmp(ident, "choose") == 0)
+    {
+      type = TKN_FUNCTION_CHOOSE;
+    }
+    if (strcmp(ident, "sqrt") == 0)
+    {
+      type = TKN_FUNCTION_SQRT;
+    }
     return new_token(type, strdup(ident), scanner->line_num);
   }
   return new_token(TKN_IDENT, strdup(ident), scanner->line_num);
@@ -268,7 +280,7 @@ Token *get_number_from_scanner(Scanner *scanner)
     c = advance(scanner);
     if (!isdigit(c))
     {
-      exit_with_error(scanner, "Expected a digit after .");
+      scanner_exit_with_error(scanner, "Expected a digit after .");
     }
     while (isdigit(c))
     {
@@ -332,7 +344,7 @@ int is_keyword(char *a)
   return 0;
 }
 
-void exit_with_error(Scanner *scanner, char *error_msg)
+void scanner_exit_with_error(Scanner *scanner, char *error_msg)
 {
   printf("Error (Line %d): %s\n", scanner->line_num, error_msg);
 }
