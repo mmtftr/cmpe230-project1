@@ -13,7 +13,7 @@ void scanner_init(Scanner *scanner, char *contents, int line_num)
   scanner->len = strlen(contents);
 }
 
-char advance(Scanner *scanner)
+static char advance_chr(Scanner *scanner)
 {
   scanner->pos++;
   if (scanner->pos - 1 >= scanner->len)
@@ -24,7 +24,7 @@ char advance(Scanner *scanner)
   return c;
 }
 
-void go_back(Scanner *scanner)
+static void go_back_chr(Scanner *scanner)
 {
   if (scanner->pos == 0)
   {
@@ -33,7 +33,7 @@ void go_back(Scanner *scanner)
   scanner->pos--;
 }
 
-char peek(Scanner *scanner)
+static char peek_chr(Scanner *scanner)
 {
   if (scanner->pos >= scanner->len)
   {
@@ -42,7 +42,7 @@ char peek(Scanner *scanner)
   return scanner->contents[scanner->pos];
 }
 
-char peek_next(Scanner *scanner)
+static char peek_next_chr(Scanner *scanner)
 {
   if (scanner->pos + 1 >= scanner->len)
   {
@@ -51,7 +51,7 @@ char peek_next(Scanner *scanner)
   return scanner->contents[scanner->pos + 1];
 }
 
-char peek_prev(Scanner *scanner)
+static char peek_prev_chr(Scanner *scanner)
 {
   if (scanner->pos - 1 < 0)
   {
@@ -60,7 +60,7 @@ char peek_prev(Scanner *scanner)
   return scanner->contents[scanner->pos - 1];
 }
 
-int match(Scanner *scanner, char c)
+static int match_chr(Scanner *scanner, char c)
 {
   if (scanner->pos >= scanner->len)
   {
@@ -136,7 +136,7 @@ Token *get_tokens_with_scanner(Scanner *scanner)
 
 Token *get_token_from_scanner(Scanner *scanner)
 {
-  char c = advance(scanner);
+  char c = advance_chr(scanner);
   while (c)
   {
     switch (c)
@@ -164,7 +164,7 @@ Token *get_token_from_scanner(Scanner *scanner)
     case '=':
       return new_token(TKN_ASSIGN, strdup("="), scanner->line_num);
     default:
-      if (isalpha(c))
+      if (isalpha(c) || c == '_')
       {
         return get_identifier_or_keyword_from_scanner(scanner);
       }
@@ -183,7 +183,7 @@ Token *get_token_from_scanner(Scanner *scanner)
     }
 
     // In case we got whitespace, keep on scanning
-    c = advance(scanner);
+    c = advance_chr(scanner);
   }
   if (c == '\0')
   {
@@ -195,17 +195,17 @@ Token *get_identifier_or_keyword_from_scanner(Scanner *scanner)
 {
   char ident[LINE_LIMIT];
 
-  char c = peek_prev(scanner);
+  char c = peek_prev_chr(scanner);
   int i = 0;
 
-  while (isalnum(c))
+  while (isalnum(c) || c == '_')
   {
     ident[i] = c;
 
     i++;
-    c = advance(scanner);
+    c = advance_chr(scanner);
   }
-  go_back(scanner);
+  go_back_chr(scanner);
   ident[i] = '\0';
 
   if (is_keyword(ident))
@@ -260,7 +260,7 @@ Token *get_number_from_scanner(Scanner *scanner)
 {
   char number[LINE_LIMIT];
 
-  char c = peek_prev(scanner);
+  char c = peek_prev_chr(scanner);
   int i = 0;
 
   int is_float = 0;
@@ -270,14 +270,14 @@ Token *get_number_from_scanner(Scanner *scanner)
     number[i] = c;
 
     i++;
-    c = advance(scanner);
+    c = advance_chr(scanner);
   }
   if (c == '.')
   {
     is_float = 1;
     number[i] = c;
     i++;
-    c = advance(scanner);
+    c = advance_chr(scanner);
     if (!isdigit(c))
     {
       scanner_exit_with_error(scanner, "Expected a digit after .");
@@ -286,10 +286,10 @@ Token *get_number_from_scanner(Scanner *scanner)
     {
       number[i] = c;
       i++;
-      c = advance(scanner);
+      c = advance_chr(scanner);
     }
   }
-  go_back(scanner);
+  go_back_chr(scanner);
 
   number[i] = '\0';
   return new_token(is_float ? TKN_FLOAT_LITERAL : TKN_INT_LITERAL, strdup(number), scanner->line_num);
@@ -297,7 +297,7 @@ Token *get_number_from_scanner(Scanner *scanner)
 
 Token *get_operator_from_scanner(Scanner *scanner)
 {
-  char c = peek_prev(scanner);
+  char c = peek_prev_chr(scanner);
   TokenType type;
   switch (c)
   {
@@ -330,7 +330,7 @@ int is_operator(char a)
   }
 }
 
-static const char **KEYWORDS = {"for", "in", "scalar", "vector", "matrix", "print", "printsep"};
+static const char *KEYWORDS[] = {"for", "in", "scalar", "vector", "matrix", "print", "printsep", "tr", "choose", "sqrt"};
 
 int is_keyword(char *a)
 {
@@ -344,7 +344,7 @@ int is_keyword(char *a)
   return 0;
 }
 
-void scanner_exit_with_error(Scanner *scanner, char *error_msg)
+static void scanner_exit_with_error(Scanner *scanner, char *error_msg)
 {
   printf("Error (Line %d): %s\n", scanner->line_num, error_msg);
 }

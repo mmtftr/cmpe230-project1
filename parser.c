@@ -32,9 +32,10 @@ Parser *new_parser(Token *tokenList)
   parser->tokens = tokenList;
   parser->token_idx = 0;
   parser->parse_tree = new_parse_tree();
+  return parser;
 }
 
-Token *get_curr(Parser *parser)
+static Token *get_curr(Parser *parser)
 {
   return &parser->tokens[parser->token_idx];
 }
@@ -44,7 +45,7 @@ int is_eof(Parser *parser)
   return (get_curr(parser)->type == TKN_EOF);
 }
 
-Token *advance(Parser *parser)
+static Token *advance(Parser *parser)
 {
   if (is_eof(parser))
   {
@@ -54,7 +55,7 @@ Token *advance(Parser *parser)
   return peek_prev(parser);
 }
 
-Token *go_back(Parser *parser)
+static Token *go_back(Parser *parser)
 {
   if (parser->token_idx == 0)
   {
@@ -64,7 +65,7 @@ Token *go_back(Parser *parser)
   return peek_next(parser);
 }
 
-Token *go_backn(Parser *parser, int n)
+static Token *go_backn(Parser *parser, int n)
 {
   if (parser->token_idx < n)
   {
@@ -77,7 +78,7 @@ Token *go_backn(Parser *parser, int n)
   return prev;
 }
 
-Token *peek_next(Parser *parser)
+static Token *peek_next(Parser *parser)
 {
   if (is_eof(parser))
   {
@@ -86,7 +87,7 @@ Token *peek_next(Parser *parser)
   return &parser->tokens[parser->token_idx + 1];
 }
 
-Token *peek_prev(Parser *parser)
+static Token *peek_prev(Parser *parser)
 {
   if (parser->token_idx == 0)
   {
@@ -95,7 +96,7 @@ Token *peek_prev(Parser *parser)
   return &parser->tokens[parser->token_idx - 1];
 }
 
-int match(Parser *parser, TokenType type)
+static int match(Parser *parser, TokenType type)
 {
   if (get_curr(parser)->type == type)
   {
@@ -105,7 +106,7 @@ int match(Parser *parser, TokenType type)
   return 0;
 }
 
-void advance_to_next_line(Parser *parser)
+static void advance_to_next_line(Parser *parser)
 {
   while (!is_eof(parser) && get_curr(parser)->type != TKN_LINE_FEED)
   {
@@ -118,7 +119,15 @@ void advance_to_next_line(Parser *parser)
   }
 }
 
-void match_or_error(Parser *parser, TokenType type, char *err)
+static void match_lf_eof_or_error(Parser *parser, char *err)
+{
+  if (!match(parser, TKN_EOF) && !match(parser, TKN_LINE_FEED))
+  {
+    parser_exit_with_error(parser, err);
+  }
+}
+
+static void match_or_error(Parser *parser, TokenType type, char *err)
 {
   if (!match(parser, type))
   {
@@ -237,7 +246,7 @@ ASTNode *parse_for_loop_statement(Parser *parser)
   {
     parser_exit_with_error(parser, "Expected ':' or 'in' after identifier in 'for' loop expression.");
   }
-  match_or_error(parser, TKN_LINE_FEED, "Expected '\n' after for statement.");
+  match_lf_eof_or_error(parser, "Expected '\n' after for statement.");
   while (get_curr(parser)->type != TKN_PN_CLOSEBRACE && !is_eof(parser))
   {
     ASTNode *statement = parse_statement(parser);
@@ -267,6 +276,10 @@ ASTNode *parse_statement(Parser *parser)
     go_back(parser);
     return parse_print_statement(parser);
   }
+  else
+  {
+    parser_exit_with_error(parser, "Unexpected token when trying to parse statement.");
+  }
 }
 
 ASTNode *parse_print_statement(Parser *parser)
@@ -288,7 +301,7 @@ ASTNode *parse_print_statement(Parser *parser)
     match_or_error(parser, TKN_PN_OPENPAREN, "Expected '(' after printsep keyword");
     match_or_error(parser, TKN_PN_CLOSEPAREN, "Expected ')' after printsep start");
   }
-  match_or_error(parser, TKN_LINE_FEED, "Expected statement to end with a newline");
+  match_lf_eof_or_error(parser, "Expected statement to end with a newline");
 
   return node;
 }
@@ -312,10 +325,14 @@ ASTNode *parse_assignment(Parser *parser)
   else
   {
     ASTNode *rhs = parse_expression(parser);
+    if (lhs->var_type.var_type != rhs->exp_result_type.var_type || lhs->var_type.height != rhs->exp_result_type.height || lhs->var_type.width != rhs->exp_result_type.width)
+    {
+      parser_exit_with_error(parser, "Type mismatch in assignment.");
+    }
     node->rhs = rhs;
   }
 
-  match_or_error(parser, TKN_LINE_FEED, "Expected statement to end with a newline");
+  match_lf_eof_or_error(parser, "Expected statement to end with a newline");
   return node;
 }
 
@@ -327,10 +344,13 @@ ASTNode *parse_declaration(Parser *parser)
   // All the verification work is done in this function:
   ResultType type = parse_var_type(parser);
 
+  // Go past the type
+  advance(parser);
+
   match_or_error(parser, TKN_IDENT, "Expected identifier after type name");
   char *ident = peek_prev(parser)->contents;
 
-  node->var_name = ident;
+  node->var_name = strdup(ident);
   node->var_type = type;
 
   Variable var = {.name = ident, .type = type};
@@ -354,7 +374,10 @@ ResultType parse_var_type(Parser *parser)
   // keyword before.
   VariableType var_type = get_var_type(get_curr(parser)->type);
 
-  int go_back_count = 0;
+  // Parsed type so advance to next token
+  advance(parser);
+  int go_back_count = 1;
+
   ResultType type = {.var_type = var_type, .height = 1, .width = 1};
   match_or_error(parser, TKN_IDENT, "Expected identifier after type name");
   go_back_count++;
@@ -388,11 +411,9 @@ ResultType parse_var_type(Parser *parser)
   }
   else if (type.var_type == TYPE_SCALAR)
   {
-    match_or_error(parser, TKN_IDENT, "Expected an identifier after scalar keyword.");
-    go_back_count++;
   }
 
-  match_or_error(parser, TKN_LINE_FEED, "Expected declaration to end with a newline");
+  match_lf_eof_or_error(parser, "Expected declaration to end with a newline");
   go_back_count++;
 
   go_backn(parser, go_back_count);
@@ -432,7 +453,7 @@ ASTNode *parse_factor(Parser *parser)
 {
   ASTNode *expr = parse_atomic(parser);
 
-  while (match(parser, TKN_PLUS) || match(parser, TKN_MINUS))
+  while (match(parser, TKN_MULT))
   {
     Token *op = peek_prev(parser);
     OperatorType type = get_op_type(op->type);
@@ -522,7 +543,7 @@ ASTNode *parse_atomic(Parser *parser)
     }
     return literal_expr;
   }
-  if (match(parser, TKN_FUNCTION_CHOOSE) || match(parser, TKN_FUNCTION_SQRT) || match(parser, TKN_FUNCTION_CHOOSE))
+  if (match(parser, TKN_FUNCTION_CHOOSE) || match(parser, TKN_FUNCTION_SQRT) || match(parser, TKN_FUNCTION_TR))
   {
     TokenType func_tok = peek_prev(parser)->type;
     int arg_count = get_arg_count(func_tok);
@@ -719,6 +740,7 @@ ASTNode *parse_list_expression(Parser *parser, ResultType type)
     idx++;
     // free(literal_node);
   }
+  list_node->contents = contents;
   list_node->num_contents = idx;
   if (list_node->num_contents != type.height * type.width)
   {
@@ -763,10 +785,12 @@ OperatorType get_op_type(TokenType type)
     return OP_PLUS;
   case TKN_MULT:
     return OP_MULT;
+  default:
+    return 0;
   }
 }
-void parser_exit_with_error(Parser *parser, char *message)
+static void parser_exit_with_error(Parser *parser, char *message)
 {
-  printf("Error: (Line %d) %s\n", message, get_curr(parser)->line_num);
+  printf("Error: (Line %d) %s\n", get_curr(parser)->line_num, message);
   exit(1);
 }

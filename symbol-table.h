@@ -1,10 +1,10 @@
 #pragma once
-enum VariableType
+typedef enum VariableType
 {
   TYPE_SCALAR,
   TYPE_VECTOR,
   TYPE_MATRIX,
-};
+} VariableType;
 
 typedef struct ResultType
 {
@@ -13,8 +13,6 @@ typedef struct ResultType
   int height;
   int width;
 } ResultType;
-
-typedef enum VariableType VariableType;
 
 struct Variable
 {

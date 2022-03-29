@@ -15,12 +15,12 @@ struct Scanner
 
 typedef struct Scanner Scanner;
 void scanner_init(Scanner *scanner, char *contents, int line_num);
-char advance(Scanner *scanner);
-void go_back(Scanner *scanner);
-char peek(Scanner *scanner);
-char peek_next(Scanner *scanner);
-char peek_prev(Scanner *scanner);
-int match(Scanner *scanner, char c);
+static char advance_chr(Scanner *scanner);
+static void go_back_chr(Scanner *scanner);
+static char peek_chr(Scanner *scanner);
+static char peek_next_chr(Scanner *scanner);
+static char peek_prev_chr(Scanner *scanner);
+static int match_chr(Scanner *scanner, char c);
 Token *get_tokens_from_file(char *filename);
 Scanner *scan_str(char *str);
 Token *get_tokens_with_scanner(Scanner *scanner);
@@ -30,4 +30,4 @@ Token *get_number_from_scanner(Scanner *scanner);
 Token *get_operator_from_scanner(Scanner *scanner);
 int is_operator(char a);
 int is_keyword(char *a);
-void scanner_exit_with_error(Scanner *scanner, char *error_msg);
+static void scanner_exit_with_error(Scanner *scanner, char *error_msg);

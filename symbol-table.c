@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "defs.h"
 #include "tokens.h"
@@ -39,5 +40,7 @@ VariableType get_var_type(TokenType type)
     return TYPE_VECTOR;
   case TKN_TYPE_MATRIX:
     return TYPE_MATRIX;
+  default:
+    return 0;
   }
 }
