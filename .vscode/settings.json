@@ -51,7 +51,12 @@
     "variant": "cpp",
     "vector": "cpp",
     "concepts": "cpp",
-    "istream": "cpp"
+    "istream": "cpp",
+    "scanner.h": "c",
+    "parser-test.h": "c",
+    "__string": "cpp",
+    "scanner-test.h": "c",
+    "iosfwd": "c"
   },
   "C_Cpp.errorSquiggles": "Enabled"
 }

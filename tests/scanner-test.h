@@ -16,7 +16,7 @@ void run_scanner_tests()
   scan_challenge_1();
   scan_challenge_2();
   scan_challenge_3();
-  printf("Scanner tests passed!\n");
+  printf("Scanner scanner passed!\n");
 }
 
 void scan_challenge_1()
@@ -34,7 +34,7 @@ void scan_challenge_1()
 
 void scan_challenge_2()
 {
-  char *challenge_1 = "for (   i in 5: 3:  321) {\n";
+  char *challenge_1 = "for (   _i in 5: 3:  321) {\n";
 
   Scanner *scanner = scan_str(challenge_1);
 
@@ -45,7 +45,7 @@ void scan_challenge_2()
   assert(tokens[1].type == TKN_PN_OPENPAREN);
 
   assert(tokens[2].type == TKN_IDENT);
-  assert(strcmp(tokens[2].contents, "i") == 0);
+  assert(strcmp(tokens[2].contents, "_i") == 0);
 
   assert(tokens[3].type == TKN_KW_IN);
 

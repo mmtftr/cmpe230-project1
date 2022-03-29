@@ -43,9 +43,9 @@ typedef struct ForLoopClause
 {
   Variable *var;
 
-  ASTNode *expr1;
-  ASTNode *expr2;
-  ASTNode *expr3;
+  struct ASTNode *expr1;
+  struct ASTNode *expr2;
+  struct ASTNode *expr3;
 } ForLoopClause;
 
 typedef struct ASTNode
@@ -76,8 +76,8 @@ typedef struct ASTNode
   OperatorType op_type;
 
   // EXP_BINOP || STMT_ASSIGNMENT
-  ASTNode *lhs;
-  ASTNode *rhs;
+  struct ASTNode *lhs;
+  struct ASTNode *rhs;
 
   // AST_EXPR
   ResultType exp_result_type;
@@ -85,7 +85,7 @@ typedef struct ASTNode
   // If a node has multiple ASTNodes nested inside,
   // this is where they are stored
   // AST_FOR_LOOP || AST_ROOT || EXP_INDEX || EXP_FUNC_CALL
-  ASTNode *contents;
+  struct ASTNode *contents;
   int num_contents;
 
   // AST_FOR_LOOP
@@ -111,16 +111,16 @@ typedef struct Parser
 ASTNode *new_ast_node(ASTNodeType type, int line_number);
 ParseTree *new_parse_tree();
 Parser *new_parser(Token *tokenList);
-Token *get_curr(Parser *parser);
+static Token *get_curr(Parser *parser);
 int is_eof(Parser *parser);
-Token *advance(Parser *parser);
-Token *go_back(Parser *parser);
-Token *go_backn(Parser *parser, int n);
-Token *peek_next(Parser *parser);
-Token *peek_prev(Parser *parser);
-int match(Parser *parser, TokenType type);
-void advance_to_next_line(Parser *parser);
-void match_or_error(Parser *parser, TokenType type, char *err);
+static Token *advance(Parser *parser);
+static Token *go_back(Parser *parser);
+static Token *go_backn(Parser *parser, int n);
+static Token *peek_next(Parser *parser);
+static Token *peek_prev(Parser *parser);
+static int match(Parser *parser, TokenType type);
+static void advance_to_next_line(Parser *parser);
+static void match_or_error(Parser *parser, TokenType type, char *err);
 ASTNode *parse_root(Parser *parser, ASTNode *root);
 ASTNode *parse_for_loop_statement(Parser *parser);
 ASTNode *parse_statement(Parser *parser);
@@ -129,7 +129,9 @@ ASTNode *parse_assignment(Parser *parser);
 ASTNode *parse_declaration(Parser *parser);
 ResultType parse_var_type(Parser *parser);
 ASTNode *parse_expression(Parser *parser);
+ASTNode *parse_term(Parser *parser);
 ASTNode *parse_factor(Parser *parser);
+ASTNode *parse_atomic(Parser *parser);
 ResultType get_func_call_result_type(Parser *parser, TokenType func_tok, ASTNode *contents);
 ResultType get_operation_result_type(Parser *parser, OperatorType op_type, ResultType lhs, ResultType rhs);
 ASTNode *parse_assignment_dest(Parser *parser);
@@ -137,4 +139,4 @@ ASTNode *parse_list_expression(Parser *parser, ResultType type);
 void add_child(ASTNode *parent, ASTNode child);
 int get_arg_count(TokenType type);
 OperatorType get_op_type(TokenType type);
-void parser_exit_with_error(Parser *parser, char *message);
+static void parser_exit_with_error(Parser *parser, char *message);
