@@ -601,11 +601,16 @@ ResultType get_func_call_result_type(Parser *parser, TokenType func_tok, ASTNode
   {
     if (contents[0].exp_result_type.var_type == TYPE_SCALAR)
     {
-      parser_exit_with_error(parser, "Expected matrix or vector expression in tr function call.");
+      result_type.var_type = TYPE_SCALAR;
+      result_type.height = 1;
+      result_type.width = 1;
     }
-    result_type.var_type = TYPE_MATRIX;
-    result_type.height = contents[0].exp_result_type.width;
-    result_type.width = contents[0].exp_result_type.height;
+    else
+    {
+      result_type.var_type = TYPE_MATRIX;
+      result_type.height = contents[0].exp_result_type.width;
+      result_type.width = contents[0].exp_result_type.height;
+    }
   }
   return result_type;
 }
