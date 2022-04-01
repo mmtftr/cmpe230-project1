@@ -13,7 +13,13 @@ void parse_challenge_2();
 void parse_challenge_3();
 void parse_challenge_4();
 void parse_challenge_5();
-void parse_fail_challenge1();
+void parse_challenge_6();
+void parse_challenge_7();
+void parse_challenge_8();
+void parse_challenge_9();
+void parse_fail_challenge_1();
+void parse_fail_challenge_2();
+void parse_fail_challenge_3();
 int is_expr_with_type(ASTNode *node, ExpressionType exp_type);
 int is_literal_with_val(ASTNode *node, char *cts);
 int is_expr_with_result_type(ASTNode *node, ResultType type);
@@ -25,16 +31,21 @@ void run_parser_tests()
   printf("Running parser tests...\n");
   reset_exit_stub();
   parse_challenge_1();
-  reset_exit_stub();
   parse_challenge_2();
-  reset_exit_stub();
   parse_challenge_3();
-  reset_exit_stub();
   parse_challenge_4();
-  reset_exit_stub();
   parse_challenge_5();
+  parse_challenge_6();
+  parse_challenge_7();
+  parse_challenge_8();
+  parse_challenge_9();
   reset_exit_stub();
-  parse_fail_challenge1();
+  parse_fail_challenge_1();
+  reset_exit_stub();
+  parse_fail_challenge_2();
+  reset_exit_stub();
+  parse_fail_challenge_3();
+  reset_exit_stub();
   printf("Parser tests passed!\n");
 }
 
@@ -141,7 +152,88 @@ void parse_challenge_5()
   assert(is_expr_with_result_type(cts[8].contents, (ResultType){.var_type = TYPE_SCALAR, .height = 1, .width = 1}));
 }
 
-void parse_fail_challenge1()
+void parse_challenge_6()
+{
+  char *challenge = "\n\
+  # simple pageranking\n\
+  # algorithm\n\
+  matrix   A[3,3]\n\
+  matrix   T[1,1]\n\
+  vector   x[3]\n\
+  vector   y[3]\n\
+  scalar   r\n\
+  scalar   i\n\
+  A={0.5 0 0.5 0 0 0.5 0.5 1 0} \n\
+  x={1 1 1}\n\
+  for(i in 1:10:1) {\n\
+  y = A*x\n\
+  T = tr(y-x)*(y-x) \n\
+  r = sqrt(T[1,1])\n\
+  print(r)\n\
+  x=y\n\
+  }\n\
+  printsep()\n\
+  print(x)\n\
+  ";
+
+  ASTNode *root = parse_return_root(challenge);
+  ASTNode *cts = root->contents;
+  // TODO: add checking
+}
+void parse_challenge_7()
+{
+  char *challenge = "\n\
+  # count how many elements are\n\
+  # greater than or equal to 4\n\
+  matrix   A[4,4]\n\
+  scalar   count\n\
+  scalar   incr\n\
+  scalar   i\n\
+  scalar   j\n\
+  A = {0 1 2 3 4 5 6 7 8 9 1 1 1 2 3 4}\n\
+  count = 0\n\
+  for (i,j in 1:4:1,1:4:1) {\n\
+      incr  = choose(A[i,j]-4,1,1,0)\n\
+      count = count + incr\n\
+  }\n\
+  print(count)\n\
+  ";
+  ASTNode *root = parse_return_root(challenge);
+  ASTNode *cts = root->contents;
+  // TODO: add checking
+}
+void parse_challenge_8()
+{
+  char *challenge = "\n\
+  # this program computes fibonacci\n\
+  # numbers\n\
+  # variable definitions\n\
+  scalar i\n\
+  scalar n\n\
+  vector x[2]\n\
+  vector y[2]\n\
+  matrix A[2,2]\n\
+  matrix B[2,2]\n\
+  # statements\n\
+  n = 10 \n\
+  x={1 1} \n\
+  A={1 1 1 0} \n\
+  B={1 0  0 1} \n\
+  print(x)\n\
+  for(i in 1:n:1) {\n\
+    B = A*B\n\
+    y = B*x\n\
+    print(y[1])\n\
+  }\n\
+  ";
+  ASTNode *root = parse_return_root(challenge);
+  ASTNode *cts = root->contents;
+}
+
+void parse_challenge_9()
+{
+}
+void parse_fail_challenge_1()
 {
   char *challenge_1 = "matrix T[1,2]\n\
   matrix A[1,2]\n\
@@ -155,6 +247,43 @@ void parse_fail_challenge1()
   if (!(return_val = setjmp(jump_env)))
   {
     parse_return_root(challenge_1);
+  }
+  assert(return_val == 1);
+}
+
+void parse_fail_challenge_2()
+{
+  char *challenge = "matrix A[1,2]\n\
+  A = { 2 3 }\n\
+  matrix T[1,2]\n";
+
+  should_exit = 1;
+  done = 0;
+  expected_code = 1;
+  int return_val = 0;
+  if (!(return_val = setjmp(jump_env)))
+  {
+    parse_return_root(challenge);
+  }
+  assert(return_val == 1);
+}
+
+void parse_fail_challenge_3()
+{
+  char *challenge = "matrix A[1,2]\n\
+  scalar a\n\
+  A = { 2 3 }\n\
+  a = 1\n\
+  A = a + A\n\
+  ";
+
+  should_exit = 1;
+  done = 0;
+  expected_code = 1;
+  int return_val = 0;
+  if (!(return_val = setjmp(jump_env)))
+  {
+    parse_return_root(challenge);
   }
   assert(return_val == 1);
 }

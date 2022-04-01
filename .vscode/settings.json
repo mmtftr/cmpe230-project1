@@ -56,7 +56,8 @@
     "parser-test.h": "c",
     "__string": "cpp",
     "scanner-test.h": "c",
-    "iosfwd": "c"
+    "iosfwd": "c",
+    "exit-stub.h": "c"
   },
   "C_Cpp.errorSquiggles": "Enabled"
 }

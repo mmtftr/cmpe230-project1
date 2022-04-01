@@ -31,6 +31,7 @@ Parser *new_parser(Token *tokenList)
   Parser *parser = calloc(1, sizeof(Parser));
   parser->tokens = tokenList;
   parser->token_idx = 0;
+  parser->is_accepting_declarations = 1;
   parser->parse_tree = new_parse_tree();
   return parser;
 }
@@ -155,16 +156,22 @@ ASTNode *parse_root(Parser *parser, ASTNode *root)
     if (match(parser, TKN_KW_FOR))
     {
       go_back(parser);
+      parser->is_accepting_declarations = 0;
       node = parse_for_loop_statement(parser);
     }
     else
     {
       node = parse_statement(parser);
+      if (node->stmt_type != STMT_DECL)
+      {
+        parser->is_accepting_declarations = 0;
+      }
     }
     if (node != NULL)
     {
       add_child(root, *node);
     }
+    skip_newlines(parser);
   }
 
   return root;
@@ -214,6 +221,12 @@ ASTNode *parse_for_loop_statement(Parser *parser)
     clause->expr1 = expr1;
     clause->expr2 = expr2;
     clause->expr3 = expr3;
+    if (expr1->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "First expression in 'for' loop expression must be a scalar.");
+    if (expr2->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "Second expression in 'for' loop expression must be a scalar.");
+    if (expr3->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "Third expression in 'for' loop expression must be a scalar.");
 
     match_or_error(parser, TKN_PN_COMMA, "Expected ',' after third expression in 'for' loop expression.");
     ASTNode *expr4 = parse_expression(parser);
@@ -227,6 +240,12 @@ ASTNode *parse_for_loop_statement(Parser *parser)
     clause2->expr1 = expr4;
     clause2->expr2 = expr5;
     clause2->expr3 = expr6;
+    if (expr4->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "Fourth expression in 'for' loop expression must be a scalar.");
+    if (expr5->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "Fifth expression in 'for' loop expression must be a scalar.");
+    if (expr6->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "Sixth expression in 'for' loop expression must be a scalar.");
 
     match_or_error(parser, TKN_PN_CLOSEPAREN, "Expected ')' after sixth expression in 'for' loop expression.");
     match_or_error(parser, TKN_PN_OPENBRACE, "Expected '{' after for clause.");
@@ -244,10 +263,15 @@ ASTNode *parse_for_loop_statement(Parser *parser)
     ASTNode *expr3 = parse_expression(parser);
     ForLoopClause *clause = calloc(1, sizeof(ForLoopClause));
     clause->var = var1;
-    // TODO: should we type-check here?
     clause->expr1 = expr1;
     clause->expr2 = expr2;
     clause->expr3 = expr3;
+    if (expr1->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "First expression in 'for' loop expression must be a scalar.");
+    if (expr2->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "Second expression in 'for' loop expression must be a scalar.");
+    if (expr3->exp_result_type.var_type != TYPE_SCALAR)
+      parser_exit_with_error(parser, "Third expression in 'for' loop expression must be a scalar.");
     match_or_error(parser, TKN_PN_CLOSEPAREN, "Expected ')' after last expression in 'for' loop expression.");
     match_or_error(parser, TKN_PN_OPENBRACE, "Expected '{' after for clause.");
     node->for_clause_1 = clause;
@@ -279,6 +303,10 @@ ASTNode *parse_statement(Parser *parser)
   else if (match(parser, TKN_TYPE_MATRIX) || match(parser, TKN_TYPE_SCALAR) || match(parser, TKN_TYPE_VECTOR))
   {
     go_back(parser);
+    if (!parser->is_accepting_declarations)
+    {
+      parser_exit_with_error(parser, "Declarations are not allowed after non-declaration statements start.");
+    }
     return parse_declaration(parser);
   }
   else if (match(parser, TKN_SPECIAL_PRINT) || match(parser, TKN_SPECIAL_PRINTSEP))
@@ -306,10 +334,14 @@ ASTNode *parse_print_statement(Parser *parser)
     node->num_contents = 1;
     match_or_error(parser, TKN_PN_CLOSEPAREN, "Expected ')' after print inner expression");
   }
-  else
+  else if (match(parser, TKN_SPECIAL_PRINTSEP))
   {
     match_or_error(parser, TKN_PN_OPENPAREN, "Expected '(' after printsep keyword");
     match_or_error(parser, TKN_PN_CLOSEPAREN, "Expected ')' after printsep start");
+  }
+  else
+  {
+    parser_exit_with_error(parser, "Expected 'print' or 'printsep' keyword");
   }
   match_lf_eof_or_error(parser, "Expected statement to end with a newline");
 
@@ -335,7 +367,7 @@ ASTNode *parse_assignment(Parser *parser)
   else
   {
     ASTNode *rhs = parse_expression(parser);
-    if (lhs->var_type.var_type != rhs->exp_result_type.var_type || lhs->var_type.height != rhs->exp_result_type.height || lhs->var_type.width != rhs->exp_result_type.width)
+    if ((lhs->var_type.var_type == TYPE_SCALAR ^ rhs->exp_result_type.var_type == TYPE_SCALAR) || lhs->var_type.height != rhs->exp_result_type.height || lhs->var_type.width != rhs->exp_result_type.width)
     {
       parser_exit_with_error(parser, "Type mismatch in assignment.");
     }
@@ -555,8 +587,9 @@ ASTNode *parse_atomic(Parser *parser)
   }
   if (match(parser, TKN_FUNCTION_CHOOSE) || match(parser, TKN_FUNCTION_SQRT) || match(parser, TKN_FUNCTION_TR))
   {
-    TokenType func_tok = peek_prev(parser)->type;
-    int arg_count = get_arg_count(func_tok);
+    Token *func_token = peek_prev(parser);
+    TokenType func_token_type = func_token->type;
+    int arg_count = get_arg_count(func_token_type);
     match_or_error(parser, TKN_PN_OPENPAREN, "Expected '(' after function call");
     int idx = 0;
     ASTNode *contents = calloc(arg_count, sizeof(ASTNode));
@@ -578,8 +611,9 @@ ASTNode *parse_atomic(Parser *parser)
     match_or_error(parser, TKN_PN_CLOSEPAREN, "Expected ')' after function call.");
     ASTNode *func_call = new_ast_node(AST_EXPR, peek_prev(parser)->line_num);
     func_call->exp_type = EXP_FUNC_CALL;
-    func_call->exp_result_type = get_func_call_result_type(parser, func_tok, contents);
+    func_call->exp_result_type = get_func_call_result_type(parser, func_token_type, contents);
     func_call->num_contents = arg_count;
+    func_call->ident = strdup(func_token->contents);
     return func_call;
   }
   parser_exit_with_error(parser, "Unexpected token when looking for a factor");

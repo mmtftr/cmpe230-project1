@@ -9,6 +9,7 @@ void run_scanner_tests();
 void scan_challenge_1();
 void scan_challenge_2();
 void scan_challenge_3();
+void scan_challenge_4();
 
 void run_scanner_tests()
 {
@@ -16,6 +17,7 @@ void run_scanner_tests()
   scan_challenge_1();
   scan_challenge_2();
   scan_challenge_3();
+  scan_challenge_4();
   printf("Scanner scanner passed!\n");
 }
 
@@ -101,4 +103,33 @@ void scan_challenge_3()
   assert(tokens[7].type == TKN_PN_CLOSEBRACE);
 
   assert(tokens[8].type == TKN_LINE_FEED);
+}
+
+void scan_challenge_4()
+{
+  char *challenge = "\n\
+  # this program computes fibonacci\n\
+  # numbers\n\
+  # variable definitions\n\
+  scalar i\n\
+  scalar n\n\
+  vector x[2]\n\
+  vector y[2]\n\
+  matrix A[2,2]\n\
+  matrix B[2,2]\n\
+  # statements\n\
+  n = 10 \n\
+  x={1 1} \n\
+  A={1 1 1 0} \n\
+  B={1 0  0 1} \n\
+  print(x)\n\
+  for(i in 1:n:1) {\n\
+    B = A*B\n\
+    y = B*x\n\
+    print(y[1])\n\
+  }\n\
+  ";
+  Scanner *scanner = scan_str(challenge);
+
+  Token *tokens = scanner->scanned_tokens;
 }
