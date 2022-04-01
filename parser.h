@@ -50,8 +50,7 @@ typedef struct ForLoopClause
   struct ASTNode *expr1;
   struct ASTNode *expr2;
   struct ASTNode *expr3;
-}
-ForLoopClause;
+} ForLoopClause;
 
 typedef struct ASTNode
 {
@@ -72,7 +71,7 @@ typedef struct ASTNode
   ExpressionType exp_type;
 
   // EXP_LITERAL
-  double literal_value;
+  char *literal_str;
 
   // EXP_IDENT
   char *ident;
