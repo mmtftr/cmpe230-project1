@@ -535,11 +535,11 @@ ASTNode *parse_atomic(Parser *parser)
     literal_expr->exp_result_type = (ResultType){.var_type = TYPE_SCALAR, .height = 1, .width = 1};
     if (peek_prev(parser)->type == TKN_INT_LITERAL)
     {
-      literal_expr->literal_value = (double)atoi(peek_prev(parser)->contents);
+      literal_expr->literal_str = strdup(peek_prev(parser)->contents);
     }
     else
     {
-      literal_expr->literal_value = atof(peek_prev(parser)->contents);
+      literal_expr->literal_str = strdup(peek_prev(parser)->contents);
     }
     return literal_expr;
   }
@@ -735,11 +735,11 @@ ASTNode *parse_list_expression(Parser *parser, ResultType type)
     literal_node->exp_result_type = (ResultType){.var_type = TYPE_SCALAR, .height = 1, .width = 1};
     if (peek_prev(parser)->type == TKN_INT_LITERAL)
     {
-      literal_node->literal_value = atoi(peek_prev(parser)->contents);
+      literal_node->literal_str = strdup(peek_prev(parser)->contents);
     }
     else
     {
-      literal_node->literal_value = atof(peek_prev(parser)->contents);
+      literal_node->literal_str = strdup(peek_prev(parser)->contents);
     }
     contents[idx] = *literal_node;
     idx++;
