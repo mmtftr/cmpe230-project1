@@ -8,6 +8,6 @@ typedef struct {
 }
 Generator;
 
+extern char *preamble;
 Generator *new_generator(ParseTree *tree);
-char *generate_declaration(ASTNode *node);
-char *generate_expression(ASTNode *node);
+

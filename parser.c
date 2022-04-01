@@ -160,6 +160,7 @@ ASTNode *parse_root(Parser *parser, ASTNode *root)
 
   return root;
 }
+
 ASTNode *parse_for_loop_statement(Parser *parser)
 {
   ASTNode *node = new_ast_node(AST_FOR_LOOP, get_curr(parser)->line_num);
@@ -714,6 +715,7 @@ ASTNode *parse_assignment_dest(Parser *parser)
   }
   return dest;
 }
+
 ASTNode *parse_list_expression(Parser *parser, ResultType type)
 {
   ASTNode *list_node = new_ast_node(AST_EXPR, get_curr(parser)->line_num);
@@ -775,6 +777,7 @@ int get_arg_count(TokenType type)
     return 0;
   }
 }
+
 OperatorType get_op_type(TokenType type)
 {
   switch (type)
@@ -789,6 +792,7 @@ OperatorType get_op_type(TokenType type)
     return 0;
   }
 }
+
 static void parser_exit_with_error(Parser *parser, char *message)
 {
   printf("Error: (Line %d) %s\n", get_curr(parser)->line_num, message);

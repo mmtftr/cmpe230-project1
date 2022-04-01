@@ -18,6 +18,7 @@ void add_variable(SymbolTable *table, Variable var)
   table->variables[table->num_variables] = var;
   table->num_variables++;
 }
+
 Variable *lookup_variable(SymbolTable *table, char *name)
 {
   for (int i = 0; i < table->num_variables; i++)

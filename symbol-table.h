@@ -1,32 +1,35 @@
 #pragma once
-typedef enum VariableType
+typedef enum VariableType //TypeName
 {
   TYPE_SCALAR,
   TYPE_VECTOR,
   TYPE_MATRIX,
-} VariableType;
+}
+VariableType;
 
-typedef struct ResultType
+typedef struct ResultType //DataType
 {
   VariableType var_type;
   // For scalars both = 1, for vectors width = 1 and height = length of vector
   int height;
   int width;
-} ResultType;
+}
+ResultType;
 
-struct Variable
+typedef struct Variable
 {
-  ResultType type;
+  ResultType type; //DataType
   char *name;
-};
+}
+Variable;
 
-typedef struct Variable Variable;
-struct SymbolTable
+typedef struct SymbolTable
 {
   Variable *variables;
   int num_variables;
-};
-typedef struct SymbolTable SymbolTable;
+}
+SymbolTable;
+
 
 SymbolTable *new_symbol_table();
 Variable *lookup_variable(SymbolTable *table, char *name);

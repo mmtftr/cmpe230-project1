@@ -9,7 +9,8 @@ typedef enum ASTNodeType
   AST_FOR_LOOP,
   AST_EXPR,
   AST_ASSIGNMENT_DEST
-} ASTNodeType;
+}
+ASTNodeType;
 
 typedef enum StatementType
 {
@@ -19,7 +20,8 @@ typedef enum StatementType
   // lhs -> AST_ASSIGNMENT_DEST, rhs->AST_EXPR
   STMT_ASSIGNMENT,
   STMT_PRINT_STMT
-} StatementType;
+}
+StatementType;
 
 typedef enum ExpressionType
 {
@@ -30,14 +32,16 @@ typedef enum ExpressionType
   EXP_INDEX,
   // List expressions are only allowed directly on the RHS of an assignment
   EXP_LIST
-} ExpressionType;
+}
+ExpressionType;
 
 typedef enum OperatorType
 {
   OP_PLUS,
   OP_MINUS,
   OP_MULT,
-} OperatorType;
+}
+OperatorType;
 
 typedef struct ForLoopClause
 {
@@ -46,7 +50,8 @@ typedef struct ForLoopClause
   struct ASTNode *expr1;
   struct ASTNode *expr2;
   struct ASTNode *expr3;
-} ForLoopClause;
+}
+ForLoopClause;
 
 typedef struct ASTNode
 {
@@ -94,20 +99,24 @@ typedef struct ASTNode
   ForLoopClause *for_clause_2;
 
   int line_number;
-} ASTNode;
+}
+ASTNode;
 
 typedef struct ParseTree
 {
   ASTNode *root;
   SymbolTable *symbol_table;
-} ParseTree;
+}
+ParseTree;
 
 typedef struct Parser
 {
   Token *tokens;
   int token_idx;
   ParseTree *parse_tree;
-} Parser;
+}
+Parser;
+
 ASTNode *new_ast_node(ASTNodeType type, int line_number);
 ParseTree *new_parse_tree();
 Parser *new_parser(Token *tokenList);
