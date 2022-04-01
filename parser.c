@@ -119,6 +119,14 @@ static void advance_to_next_line(Parser *parser)
   }
 }
 
+static void skip_newlines(Parser *parser)
+{
+  while (get_curr(parser)->type == TKN_LINE_FEED)
+  {
+    advance(parser);
+  }
+}
+
 static void match_lf_eof_or_error(Parser *parser, char *err)
 {
   if (!match(parser, TKN_EOF) && !match(parser, TKN_LINE_FEED))
@@ -142,6 +150,7 @@ ASTNode *parse_root(Parser *parser, ASTNode *root)
 
   while (!is_eof(parser))
   {
+    skip_newlines(parser);
     ASTNode *node;
     if (match(parser, TKN_KW_FOR))
     {
@@ -535,11 +544,11 @@ ASTNode *parse_atomic(Parser *parser)
     literal_expr->exp_result_type = (ResultType){.var_type = TYPE_SCALAR, .height = 1, .width = 1};
     if (peek_prev(parser)->type == TKN_INT_LITERAL)
     {
-      literal_expr->literal_value = (double)atoi(peek_prev(parser)->contents);
+      literal_expr->literal_str = strdup(peek_prev(parser)->contents);
     }
     else
     {
-      literal_expr->literal_value = atof(peek_prev(parser)->contents);
+      literal_expr->literal_str = strdup(peek_prev(parser)->contents);
     }
     return literal_expr;
   }
@@ -601,11 +610,16 @@ ResultType get_func_call_result_type(Parser *parser, TokenType func_tok, ASTNode
   {
     if (contents[0].exp_result_type.var_type == TYPE_SCALAR)
     {
-      parser_exit_with_error(parser, "Expected matrix or vector expression in tr function call.");
+      result_type.var_type = TYPE_SCALAR;
+      result_type.height = 1;
+      result_type.width = 1;
     }
-    result_type.var_type = TYPE_MATRIX;
-    result_type.height = contents[0].exp_result_type.width;
-    result_type.width = contents[0].exp_result_type.height;
+    else
+    {
+      result_type.var_type = TYPE_MATRIX;
+      result_type.height = contents[0].exp_result_type.width;
+      result_type.width = contents[0].exp_result_type.height;
+    }
   }
   return result_type;
 }
@@ -730,11 +744,11 @@ ASTNode *parse_list_expression(Parser *parser, ResultType type)
     literal_node->exp_result_type = (ResultType){.var_type = TYPE_SCALAR, .height = 1, .width = 1};
     if (peek_prev(parser)->type == TKN_INT_LITERAL)
     {
-      literal_node->literal_value = atoi(peek_prev(parser)->contents);
+      literal_node->literal_str = strdup(peek_prev(parser)->contents);
     }
     else
     {
-      literal_node->literal_value = atof(peek_prev(parser)->contents);
+      literal_node->literal_str = strdup(peek_prev(parser)->contents);
     }
     contents[idx] = *literal_node;
     idx++;

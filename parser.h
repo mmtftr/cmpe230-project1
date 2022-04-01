@@ -67,7 +67,7 @@ typedef struct ASTNode
   ExpressionType exp_type;
 
   // EXP_LITERAL
-  double literal_value;
+  char *literal_str;
 
   // EXP_IDENT
   char *ident;

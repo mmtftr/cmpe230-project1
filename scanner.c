@@ -137,8 +137,20 @@ Token *get_tokens_with_scanner(Scanner *scanner)
 Token *get_token_from_scanner(Scanner *scanner)
 {
   char c = advance_chr(scanner);
+  int is_in_comment = 0;
   while (c)
   {
+    if (is_in_comment)
+    {
+      if (c == '\n')
+        is_in_comment = 0;
+      else
+      {
+        c = advance_chr(scanner);
+        continue;
+      }
+    }
+
     switch (c)
     {
     case ' ':
@@ -163,6 +175,9 @@ Token *get_token_from_scanner(Scanner *scanner)
       return new_token(TKN_PN_COLON, strdup(":"), scanner->line_num);
     case '=':
       return new_token(TKN_ASSIGN, strdup("="), scanner->line_num);
+    case '#':
+      is_in_comment = 1;
+      continue;
     default:
       if (isalpha(c) || c == '_')
       {
