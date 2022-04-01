@@ -3,10 +3,10 @@
 #include <unistd.h>
 #include <setjmp.h>
 
-extern int expected_code = 0;
-extern int should_exit = 0;
-extern int done = 0;
-extern jmp_buf jump_env = {};
+int expected_code = 0;
+int should_exit = 0;
+int done = 0;
+jmp_buf jump_env = {};
 void exit(int);
 void reset_exit_stub();
 

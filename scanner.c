@@ -122,6 +122,8 @@ Token *get_tokens_with_scanner(Scanner *scanner)
   while (scanner->pos < scanner->len)
   {
     Token *token = get_token_from_scanner(scanner);
+    if (!token)
+      break;
     if (token->type == TKN_LINE_FEED)
     {
       scanner->line_num++;
@@ -130,6 +132,7 @@ Token *get_tokens_with_scanner(Scanner *scanner)
     free(token);
     tokens_index++;
   }
+  tokens[tokens_index] = *new_token(TKN_EOF, "", scanner->line_num);
 
   return tokens;
 }
@@ -142,7 +145,7 @@ Token *get_token_from_scanner(Scanner *scanner)
   {
     if (is_in_comment)
     {
-      if (c == '\n')
+      if (c == '\n' || c == '\0')
         is_in_comment = 0;
       else
       {
@@ -200,10 +203,7 @@ Token *get_token_from_scanner(Scanner *scanner)
     // In case we got whitespace, keep on scanning
     c = advance_chr(scanner);
   }
-  if (c == '\0')
-  {
-    return new_token(TKN_EOF, strdup(""), scanner->line_num);
-  }
+  return NULL;
 }
 
 Token *get_identifier_or_keyword_from_scanner(Scanner *scanner)
