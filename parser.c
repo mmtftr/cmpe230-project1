@@ -119,6 +119,14 @@ static void advance_to_next_line(Parser *parser)
   }
 }
 
+static void skip_newlines(Parser *parser)
+{
+  while (get_curr(parser)->type == TKN_LINE_FEED)
+  {
+    advance(parser);
+  }
+}
+
 static void match_lf_eof_or_error(Parser *parser, char *err)
 {
   if (!match(parser, TKN_EOF) && !match(parser, TKN_LINE_FEED))
@@ -142,6 +150,7 @@ ASTNode *parse_root(Parser *parser, ASTNode *root)
 
   while (!is_eof(parser))
   {
+    skip_newlines(parser);
     ASTNode *node;
     if (match(parser, TKN_KW_FOR))
     {

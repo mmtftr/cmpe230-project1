@@ -104,7 +104,7 @@ void parse_challenge_4()
 
 void parse_challenge_5()
 {
-  char *challenge_1 = "matrix A[4,4]\n\
+  char *challenge_1 = "matrix A[4,4] #adsds\n\
   matrix T[1,1]\n\
   vector x[4]\n\
   vector xy2[4]\n\
@@ -112,6 +112,7 @@ void parse_challenge_5()
   A = {0 1 2 3 4 5 6 7 8 9 1 1 1 2 3 4 }\n\
   x = {1 1 1 1 }\n\
   xy2 = { 2 1 3 1 }\n\
+  \n\
   print(s)\n\
   T = tr(x)*A*xy2\n\
   s = T[1,1]";
