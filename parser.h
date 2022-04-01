@@ -50,7 +50,8 @@ typedef struct ForLoopClause
   struct ASTNode *expr1;
   struct ASTNode *expr2;
   struct ASTNode *expr3;
-} ForLoopClause;
+}
+ForLoopClause;
 
 typedef struct ASTNode
 {

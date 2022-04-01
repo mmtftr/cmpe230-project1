@@ -20,18 +20,25 @@ char *new_code_string()
             ");
 }
 
+char *get_str(int val)
+{
+    char str[LINE_LIMIT];
+    sprintf(str, "%d", val);
+    return str;
+}
+
 void generate_statement(Generator *generator, ASTNode *node)
 {
     switch (node->stmt_type)
     {
         case STMT_DECL:
-            generate_declaration_stmt(node, generator);
+            generate_declaration_stmt(generator, node);
             break;
         case STMT_ASSIGNMENT:
-            generate_assignment_stmt(node, generator);
+            generate_assignment_stmt(generator, node);
             break;
         case STMT_PRINT_STMT:
-            generate_print_stmt(node, generator);
+            generate_print_stmt(generator, node);
             break;
     }
 }
@@ -40,44 +47,37 @@ void generate_declaration_stmt(Generator *generator, ASTNode *node)
 {
     if (node->var_type.var_type == TYPE_SCALAR)
     {
-        generate_str("double ", generator);
-        generate_str(node->var_name, generator);
-        generate_chr(';', generator);
+        generate_str(generator, "double ");
+        generate_str(generator, node->var_name);
+        generate_str(generator, ";");
     }
     else if (node->var_type.var_type == TYPE_VECTOR)
     {
-        generate_str("double **", generator);
-        generate_str(node->var_name, generator);
-        generate_chr('[', generator);
-        char format[LINE_LIMIT];
-        sprintf(format, "%d", node->var_type.height);
-        generate_str(format, generator);
-        generate_str("];", generator);
+        generate_str(generator, "double ");
+        generate_str(generator, node->var_name);
+        generate_str(generator, "[");
+        generate_str(generator, get_str(node->var_type.height));
+        generate_str(generator, "];");
     }
     else if (node->var_type.var_type == TYPE_MATRIX)
     {
-        generate_str("double **", generator);
-        generate_str(node->var_name, generator);
-        generate_chr('[', generator);
-        char format_1[LINE_LIMIT];
-        sprintf(format_1, "%d", node->var_type.height);
-        gnerate_str(format_1, generator);
-        generate_chr(']', generator);
-        generate_chr('[', generator);
-        char format_2[LINE_LIMIT];
-        sprintf(format_2, "%d", node->var_type.width);
-        generate_str(format_2, generator);
+        generate_str(generator, "double ");
+        generate_str(generator, node->var_name);
+        generate_str(generator, "[");
+        gnerate_str(generator, get_str(node->var_type.height));
+        generate_str(generator, "]");
+        generate_str(generator, "[");
+        generate_str(generator, get_str(node->var_type.width));
         generate_str("];", generator);
     }
 }
 
 void generate_assignment_stmt(Generator *generator, ASTNode *node)
 {
-    generate_assignment_dest(node->lhs, generator);
-    generate_str(" = ", generator);
-    generate_expression(node->rhs, generator);
-    generate_chrr(';', generator);
-
+    generate_assignment_dest(generator, node->lhs);
+    generate_str(generator, " = ");
+    generate_expression(generator, node->rhs);
+    generate_str(generator, ";");
 }
 
 void generate_assignment_dest(Generator *generator, ASTNode *node)
@@ -95,80 +95,105 @@ void generate_expression(Generator *generator, ASTNode *node)
     switch (node->exp_type)
     {
         case EXP_LITERAL:
+            generate_str(generator, node->literal_str);
             break;
         case EXP_LIST:
+            generate_str(generator, "{");
+            for (int i = 0 ; i < node->num_contents - 1 ; i++)
+            {
+                generate_str(generator, (&node->contents[i])->literal_str);
+                generate_str(generator, ",");
+            }
+            generate_str(generator, &node->contents[node->num_contents - 1]);
+            generate_str(generator, "}");
             break;
         case EXP_IDENT:
+            generate_str(generator, node->ident);
             break;
         case EXP_BINOP:
+            generate_str(generator, "(");
+            if (node->op_type == OP_PLUS)
+            {
+                if (node->lhs->exp_result_type.var_type == TYPE_MATRIX || node->lhs->exp_result_type.var_type == TYPE_VECTOR)
+                {
+                    generate_mat_add_sub(generator, node->lhs, node->rhs, "mat_add");
+                }
+                else if (node->lhs->exp_result_type.var_type == TYPE_SCALAR)
+                {
+                    generate_ord_op(generator, node->lhs, node->rhs, "+");
+                }
+            }
+            else if (node->op_type == OP_MINUS)
+            {
+                if (node->lhs->exp_result_type.var_type == TYPE_MATRIX || node->lhs->exp_result_type.var_type == TYPE_VECTOR)
+                {
+                    generate_mat_add_sub(generator, node->lhs, node->rhs, "mat_sub");
+                }
+                else if (node->lhs->exp_result_type.var_type == TYPE_SCALAR)
+                {
+                    generate_ord_op(generator, node->lhs, node->rhs, "-");
+                }
+            }
+            else if (node->op_type == OP_MULT)
+            {
+                if (node->lhs->exp_result_type.var_type == TYPE_MATRIX || node->lhs->exp_result_type.var_type == TYPE_VECTOR)
+                {
+                    if (node->rhs->exp_result_type.var_type == TYPE_MATRIX || node->rhs->exp_result_type.var_type == TYPE_VECTOR)
+                    {
+                        generate_mat_mul(generator, node->lhs, node->rhs);
+                    }
+                    else if (node->rhs->exp_result_type.var_type == TYPE_SCALAR)
+                    {
+                        generate_sca_mul(generator, node->lhs, node->rhs);
+                    }
+                }
+                else if (node->lhs->exp_result_type.var_type == TYPE_SCALAR)
+                {
+                    if (node->rhs->exp_result_type.var_type == TYPE_MATRIX || node->rhs->exp_result_type.var_type == TYPE_VECTOR)
+                    {
+                        generate_mat_mul(generator, node->rhs, node->lhs);
+                    }
+                    else if (node->rhs->exp_result_type.var_type == TYPE_SCALAR)
+                    {
+                        generate_ord_op(generator, node->lhs, node->rhs, "*");
+                    }
+                }
+            }
+            generate_str(generator, ")");
             break;
         case EXP_FUNC_CALL:
+            switch (expression)
+            {
+            case /* constant-expression */:
+                /* code */
+                break;
+            
+            default:
+                break;
+            } ()
             break;
         case EXP_INDEX:
+            
             break;
-    }
-    // node is an AST_EXPR
-    if (node->exp_type == EXP_IDENT)
-    {
-        char format[LINE_LIMIT];
-        sprintf(format, "%d", node->literal_value); //not sure
-        generate_str(format, generator);
-        
-    }
-    else if (node->exp_type == EXP_LITERAL)
-    {
-        char format[LINE_LIMIT];
-        sprintf(format, "%d", node->literal_value); //not sure
-        generate_str(format, generator);
-    }
-    else if (node->exp_type == EXP_IDENT)
-    {
-        generate_identifier(node, generator);
-    }
-    else if (node->exp_type == EXP_BINOP)
-    {
-        if (node->op_type == OP_MULT)
-        {
-            generate_chr(generator, '*');
-        }
-        else if (node->op_type == OP_PLUS)
-        {
-            generate_chr(generator, '+');
-        }
-        else if (node->op_type == OP_MINUS)
-        {
-            generate_chr(generator, '-');
-        }
-    }
-    else if (node->exp_type == EXP_INDEX)
-    {
-        generate_identifier(node->contents, generator);
-        generate_left_bracket(generator);
     }
 }
 
 void generate_for_loop(Generator *generator, ASTNode *node)
 {
-    generate_chr(generator, '\t');
+    generate_str(generator, "\t");
     generate_for_header(generator, node);
-    generate_chr(generator, '\n');
+    generate_str(generator, "\n");
     for (int i = 0 ; i < node->num_contents ; i++)
     {
         generate_str(generator, "\t\t");
         generate_statement(generator, node);
-        generate_chr(generator, '\n');
+        generate_str(generator, "\n");
     }
 }
 
 void generate_for_header(Generator *generator, ASTNode *node)
 {
 
-}
-
-void generate_chr(Generator *generator, char chr)
-{
-    char append[2] = {chr, '\0'};
-    strcat(generator->code_string, append);
 }
 
 void generate_str(Generator *generator, char *string)
@@ -179,6 +204,58 @@ void generate_str(Generator *generator, char *string)
 void generate_identifier(Generator *generator, ASTNode *node)
 {
     strcat(generator->code_string, node->ident);
+}
+
+void generate_mat_add_sub(Generator *generator, ASTNode *mat1, ASTNode *mat2, char *func_name)
+{
+    generate_str(generator, func_name);
+    generate_str(generator, "(");
+    generate_expression(generator, mat1);
+    generate_str(generator, ", ");
+    generate_expression(generator, mat2);
+    generate_str(generator, ", ");
+    generate_str(generator, mat1->exp_result_type.height);
+    generate_str(generator, ", ");
+    generate_str(generator, mat1->exp_result_type.width);
+    generate_str(generator, ")");
+}
+
+void generate_ord_op(Generator *generator, ASTNode *sca1, ASTNode *sca2, char *chr)
+{
+    generate_expression(generator, sca1);
+    generate_str(generator, chr);
+    generate_expression(generator, sca2);
+}
+
+void generate_mat_mul(Generator *generator, ASTNode *mat1, ASTNode *mat2)
+{
+    generate_str(generator, "mat_mul(");
+    generate_expression(generator, mat1);
+    generate_str(generator, ", ");
+    generate_str(generator, mat1->exp_result_type.height);
+    generate_str(generator, ", ");
+    generate_str(generator, mat1->exp_result_type.width);
+    generate_str(generator, ", ");
+    generate_expression(generator, mat2);
+    generate_str(generator, ", ");
+    generate_str(generator, mat2->exp_result_type.height);
+    generate_str(generator, ", ");
+    generate_str(generator, mat2->exp_result_type.width);
+    generate_str(generator, ", ");
+    generate_str(generator, ")");
+}
+
+void generate_sca_mul(Generator *generator, ASTNode *mat, ASTNode *sca)
+{
+    generate_str(generator, "mat_sca_mul(");
+    generate_expression(generator, mat);
+    generate_str(generator, ", ");
+    generate_str(generator, mat->exp_result_type.height);
+    generate_str(generator, ", ");
+    generate_str(generator, mat->exp_result_type.width);
+    generate_str(generator, ", ");
+    generate_expression(generator, sca);
+    generate_str(generator, ")");
 }
 
 void generate_code_string(Generator *generator, ParseTree *tree)
@@ -194,11 +271,11 @@ void traverse_and_generate(Generator *generator, ASTNode *node)
     switch (node->type)
     {
         case AST_STMT:
-            generate_chr(generator, '\t');
+            generate_str(generator, "\t");
             generate_statement(generator, node);
-            generate_chr(generator, '\n');
+            generate_str(generator, "\n");
         case AST_FOR_LOOP:
-            generate_chr(generator, '\t');
+            generate_str(generator, "\t");
             generate_for_loop(generator, node);
     }       
     for (int i = 0 ; i < node->num_contents ; ++i)

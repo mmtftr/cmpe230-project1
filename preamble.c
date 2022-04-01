@@ -13,7 +13,7 @@ double **allocate_matrix(int size_1, int size_2)
   return result;
 }
 
-double **add_mat(double **mat1, double **mat2, int h, int w)
+double **mat_add(double **mat1, double **mat2, int h, int w)
 {
   double **result = allocate_matrix(h, w);
   for (int i = 0; i < h; i++)
@@ -21,6 +21,19 @@ double **add_mat(double **mat1, double **mat2, int h, int w)
     for (int j = 0; j < w; j++)
     {
       result[i][j] = mat1[i][j] + mat2[i][j];
+    }
+  }
+  return result;
+}
+
+double **mat_sub(double **mat1, double **mat2, int h, int w)
+{
+  double **result = allocate_matrix(h, w);
+  for (int i = 0; i < h; i++)
+  {
+    for (int j = 0; j < w; j++)
+    {
+      result[i][j] = mat1[i][j] + -1 * mat2[i][j];
     }
   }
   return result;
@@ -35,7 +48,7 @@ int get_int(double scalar)
   return (int)scalar + 1;
 }
 
-double **matmul(double **mat1, int h1, int w1, double **mat2, int h2, int w2)
+double **mat_mul(double **mat1, int h1, int w1, double **mat2, int h2, int w2)
 {
 
   double **result = allocate_matrix(h1, w2);
@@ -53,6 +66,18 @@ double **matmul(double **mat1, int h1, int w1, double **mat2, int h2, int w2)
     }
   }
   return result;
+}
+
+double **mat_sca_mul(double **mat, int h, int w, double sca)
+{
+  for (int i = 0; i < h; i++)
+  {
+    for (int j = 0; j < w; j++)
+    {
+      mat[i][j] = mat[i][j] * sca;
+    }
+  }
+  return mat;
 }
 
 double **tr(double **mat, int h, int w)
@@ -97,6 +122,7 @@ void print(double number)
     printf("%f\n", number);
   }
 }
+
 void printsep()
 {
   printf("----------\n");
