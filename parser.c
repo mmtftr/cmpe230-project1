@@ -205,6 +205,12 @@ ASTNode *parse_for_loop_statement(Parser *parser)
     snprintf(error_msg, 100, "Variable '%s' not declared in 'for' loop expression.", ident1);
     parser_exit_with_error(parser, error_msg);
   }
+  if (var1->type.var_type != TYPE_SCALAR)
+  {
+    char error_msg[100];
+    snprintf(error_msg, 100, "Expected variable '%s' in 'for' loop expression to be scalar", ident1);
+    parser_exit_with_error(parser, error_msg);
+  }
 
   if (match(parser, TKN_PN_COMMA))
   {
@@ -216,6 +222,12 @@ ASTNode *parse_for_loop_statement(Parser *parser)
     {
       char error_msg[100];
       snprintf(error_msg, 100, "Variable '%s' not declared in 'for' loop expression.", ident1);
+      parser_exit_with_error(parser, error_msg);
+    }
+    if (var2->type.var_type != TYPE_SCALAR)
+    {
+      char error_msg[100];
+      snprintf(error_msg, 100, "Expected variable '%s' in 'for' loop expression to be scalar", ident2);
       parser_exit_with_error(parser, error_msg);
     }
 
