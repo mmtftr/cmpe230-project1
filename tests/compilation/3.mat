@@ -1,0 +1,3 @@
+scalar j
+
+for (j in 3: 9: 3)

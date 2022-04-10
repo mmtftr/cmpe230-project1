@@ -294,7 +294,7 @@ ASTNode *parse_for_loop_statement(Parser *parser)
   while (get_curr(parser)->type != TKN_PN_CLOSEBRACE && !is_eof(parser))
   {
     ASTNode *statement = parse_statement(parser);
-    if (statement != NULL) //how can this be ever null?
+    if (statement != NULL)
     {
       add_child(node, *statement);
     }
