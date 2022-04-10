@@ -395,7 +395,7 @@ ASTNode *parse_assignment(Parser *parser)
     if (lhs->exp_type == EXP_INDEX)
     {
       if (rhs->exp_result_type.var_type != TYPE_SCALAR)
-        parser_exit_with_error(parser, "Type mismatch in assignment.");
+        parser_exit_with_error(parser, "Type mismatch in assignment, expected scalar to be assigned to an index expression.");
     }
     else if ((variable_type.var_type == TYPE_SCALAR ^ rhs->exp_result_type.var_type == TYPE_SCALAR) || variable_type.height != rhs->exp_result_type.height || variable_type.width != rhs->exp_result_type.width)
     {
@@ -530,7 +530,7 @@ ASTNode *parse_factor(Parser *parser)
   {
     Token *op = peek_prev(parser);
     OperatorType type = get_op_type(op->type);
-    ASTNode *rhs = parse_factor(parser); // shouldn't this be parse_atomic?
+    ASTNode *rhs = parse_atomic(parser); // shouldn't this be parse_atomic?
     ASTNode *parent = new_ast_node(AST_EXPR, get_curr(parser)->line_num);
 
     parent->exp_type = EXP_BINOP;
@@ -790,7 +790,7 @@ ASTNode *parse_assignment_dest(Parser *parser)
     ASTNode *index1 = parse_expression(parser);
     if (index1->exp_result_type.var_type != TYPE_SCALAR)
     {
-      parser_exit_with_error(parser, "Expected a scalar for indexing.");
+      parser_exit_with_error(parser, "Expected the index to be scalar.");
     }
 
     if (var->type.var_type == TYPE_VECTOR)
