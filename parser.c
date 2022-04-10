@@ -517,7 +517,7 @@ ASTNode *parse_factor(Parser *parser)
   {
     Token *op = peek_prev(parser);
     OperatorType type = get_op_type(op->type);
-    ASTNode *rhs = parse_factor(parser); //shouldn't this be parse_atomic?
+    ASTNode *rhs = parse_atomic(parser); //shouldn't this be parse_atomic?
     ASTNode *parent = new_ast_node(AST_EXPR, get_curr(parser)->line_num);
 
     parent->exp_type = EXP_BINOP;
